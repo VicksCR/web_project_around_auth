@@ -1,39 +1,86 @@
 import "../../src/index.css";
 import { useEffect, useState } from "react";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 
+import * as auth from "../utils/auth.js";
 import api from "../utils/api.js";
 
 import Header from "./Header/Header.jsx";
 import Main from "./Main/Main.jsx";
+import Login from "../components/Main/components/Login/Login.jsx";
+import Register from "../components/Main/components/Register/Register.jsx";
+import InfoToolTip from "../components/Main/components/InfoToolTip/InfoToolTip.jsx";
+import ProtectedRoute from "../components/Main/components/ProtectedRoute/ProtectedRoute.jsx";
 import CurrentUserContext from "../contexts/CurrentUserContext.js";
 
 export default function App() {
-  const [popup, setPopup] = useState(null);
   const [currentUser, setCurrentUser] = useState([]);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [email, setEmail] = useState("");
   const [cards, setCards] = useState([]);
+  const [popup, setPopup] = useState(null);
+  const [infoToolTip, setInfoToolTip] = useState({
+    open: false,
+    success: false,
+  });
+
+  const navigate = useNavigate();
 
   useEffect(() => {
-    api
-      .getUserInfo()
-      .then((data) => {
-        setCurrentUser(data);
-      })
-      .catch((err) => {
-        console.error("Error al cargar la información del usuario:", err);
-      });
+    const token = localStorage.getItem("jwt");
+    if (token) {
+      auth
+        .checkToken(token)
+        .then((res) => {
+          setEmail(res.data.email);
+          setLoggedIn(true);
+        })
+        .catch(() => {
+          localStorage.removeItem("jwt");
+        });
+    }
   }, []);
 
   useEffect(() => {
-    api
-      .getInitialCards()
-      .then((data) => {
-        setCards(data);
-      })
-      .catch((err) => {
-        console.error("Error al cargar las tarjetas:", err);
-      });
-  }, []);
+    if (!loggedIn) return;
+    api.getUserInfo().then(setCurrentUser).catch(console.error);
 
+    api.getInitialCards().then(setCards).catch(console.error);
+  }, [loggedIn]);
+
+  const handelRegister = (email, password) => {
+    auth
+      .register(email, password)
+      .then(() => {
+        setInfoToolTip({ open: true, success: true });
+        navigate("/signin");
+      })
+      .catch(() => {
+        setInfoToolTip({ open: true, success: false });
+      });
+  };
+
+  const handleLogin = (email, password) => {
+    auth
+      .authorize(email, password)
+      .then(({ token }) => {
+        localStorage.setItem("jwt", token);
+        setLoggedIn(true);
+        setEmail(email);
+        navigate("/");
+      })
+      .catch(() => {
+        setInfoToolTip({ open: true, success: false });
+      });
+  };
+
+  const handelLogout = () => {
+    localStorage.removeItem("jwt");
+    setLoggedIn(false);
+    setEmail("");
+  };
+
+  //CODIGO INICIAL
   const handleAddPlaceSubmit = ({ name, link }) => {
     (async () => {
       await api
@@ -114,20 +161,46 @@ export default function App() {
   }
 
   return (
-    <div className="page">
-      <CurrentUserContext.Provider value={{ currentUser, handleUpdateUser }}>
-        <Header />
-        <Main
-          popup={popup}
-          onOpenPopup={handleOpenPopup}
-          onClosePopup={handleClosePopup}
-          onUpdateAvatar={handleUpdateAvatar}
-          cards={cards}
-          onCardLike={handleCardLike}
-          onCardDelete={handleCardDelete}
-          onCardSubmit={handleAddPlaceSubmit}
+    <CurrentUserContext.Provider value={{ currentUser, handleUpdateUser }}>
+      <div className="page">
+        <Header email={email} onLogout={handelLogout} loggedIn={loggedIn} />
+
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute loggedIn={loggedIn}>
+                <Main
+                  popup={popup}
+                  onOpenPopup={handleOpenPopup}
+                  onClosePopup={handleClosePopup}
+                  onUpdateAvatar={handleUpdateAvatar}
+                  cards={cards}
+                  setCards={setCards}
+                  onCardLike={handleCardLike}
+                  onCardDelete={handleCardDelete}
+                  onCardSubmit={handleAddPlaceSubmit}
+                />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/signup"
+            element={<Register onRegister={handelRegister} />}
+          />
+          <Route path="/signin" element={<Login onLogin={handleLogin} />} />
+          <Route
+            path="*"
+            element={<Navigate to={loggedIn ? "/" : "/signin"} />}
+          />
+        </Routes>
+
+        <InfoToolTip
+          isOpen={infoToolTip.open}
+          isSuccess={infoToolTip.success}
+          onClose={() => setInfoToolTip({ open: false, success: false })}
         />
-      </CurrentUserContext.Provider>
-    </div>
+      </div>
+    </CurrentUserContext.Provider>
   );
 }

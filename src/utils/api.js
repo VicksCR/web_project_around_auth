@@ -4,10 +4,17 @@ class Api {
     this.headers = options.headers;
   }
 
+  _getHeaders() {
+    return {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("jwt")}`,
+    };
+  }
+
   getUserInfo() {
     return fetch(`${this.baseUrl}/users/me`, {
       method: "GET",
-      headers: this.headers,
+      headers: this._getHeaders(),
     })
       .then((res) => {
         if (!res.ok) {
@@ -23,7 +30,7 @@ class Api {
   getInitialCards() {
     return fetch(`${this.baseUrl}/cards`, {
       method: "GET",
-      headers: this.headers,
+      headers: this._getHeaders(),
     })
       .then((res) => {
         if (!res.ok) {
@@ -39,7 +46,7 @@ class Api {
   updateUserProfile(name, about) {
     return fetch(`${this.baseUrl}/users/me`, {
       method: "PATCH",
-      headers: this.headers,
+      headers: this._getHeaders(),
       body: JSON.stringify({ name, about }),
     })
       .then((res) => {
@@ -56,7 +63,7 @@ class Api {
   addNewCard(name, link) {
     return fetch(`${this.baseUrl}/cards`, {
       method: "POST",
-      headers: this.headers,
+      headers: this._getHeaders(),
       body: JSON.stringify({ name, link }),
     })
       .then((res) => {
@@ -77,7 +84,7 @@ class Api {
   toggleLike(cardId, isLiked) {
     return fetch(`${this.baseUrl}/cards/${cardId}/likes`, {
       method: isLiked ? "DELETE" : "PUT",
-      headers: this.headers,
+      headers: this._getHeaders(),
     })
       .then((res) => {
         if (!res.ok) {
@@ -93,7 +100,7 @@ class Api {
   deleteCard(cardId) {
     return fetch(`${this.baseUrl}/cards/${cardId}`, {
       method: "DELETE",
-      headers: this.headers,
+      headers: this._getHeaders(),
     }).then((res) => {
       if (!res.ok) {
         return Promise.reject(`Error: ${res.status}`);
@@ -105,7 +112,7 @@ class Api {
   updateProfileAvatar(avatar) {
     return fetch(`${this.baseUrl}/users/me/avatar`, {
       method: "PATCH",
-      headers: this.headers,
+      headers: this._getHeaders(),
       body: JSON.stringify({ avatar }),
     })
       .then((res) => {
