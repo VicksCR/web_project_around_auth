@@ -14,7 +14,7 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  width: 40%;
+  min-width: 40%;
 }
 
 .login__title {
@@ -79,28 +79,12 @@
   opacity: 0.6;
 }
 
-/*
 @media screen and (max-width: 320px) {
   .login {
     max-width: 320px;
   }
-}
 
-.login__title {
-  width: 260px;
-  font-size: 20px;
+  .login__form {
+    width: 80%;
+  }
 }
-
-.login__label {
-  width: 260px;
-}
-
-.login__submit-button {
-  height: 46px;
-}
-
-.login__redirect {
-  height: 15px;
-  font-size: 12px;
-}
-*/
