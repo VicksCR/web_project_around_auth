@@ -102,11 +102,13 @@ export default function Main({
       </section>
 
       <Footer />
+
       {popup && (
         <Popup
           onClose={onClosePopup}
           title={popup.title}
           variant={popup.variant}
+          isOpen={Boolean(popup)}
         >
           {popup.children}
         </Popup>

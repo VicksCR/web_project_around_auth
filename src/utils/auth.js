@@ -5,9 +5,12 @@ export const register = (email, password) => {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
-  }).then((res) =>
-    res.ok ? res.json() : Promise.reject(`Error: ${res.status}`)
-  );
+  }).then((res) => {
+    if (res.ok) return res.json();
+    return res
+      .json()
+      .then((err) => Promise.reject(err.message || `Error: ${res.status}`));
+  });
 };
 
 export const authorize = (email, password) => {
@@ -15,9 +18,12 @@ export const authorize = (email, password) => {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
-  }).then((res) =>
-    res.ok ? res.json() : Promise.reject(`Error: ${res.status}`)
-  );
+  }).then((res) => {
+    if (res.ok) return res.json();
+    return res
+      .json()
+      .then((err) => Promise.reject(err.message || `Error: ${res.status}`));
+  });
 };
 
 export const checkToken = (token) => {
@@ -27,21 +33,10 @@ export const checkToken = (token) => {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-  }).then((res) =>
-    res.ok ? res.json() : Promise.reject(`Error: ${res.status}`)
-  );
+  }).then((res) => {
+    if (res.ok) return res.json();
+    return res
+      .json()
+      .then((err) => Promise.reject(err.message || `Error: ${res.status}`));
+  });
 };
-
-/*import React from "react";
-import { Routes, Route } from "react-router-dom";
-import SignUp from "../pages/SignUp";
-import SignIn from "../pages/SignIn";
-
-export default function AuthRoutes() {
-  return (
-    <Routes>
-      <Route path="/signup" element={<SignUp />} />
-      <Route path="/signin" element={<SignIn />} />
-    </Routes>
-  );
-}*/

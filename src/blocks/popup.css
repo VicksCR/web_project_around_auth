@@ -4,7 +4,8 @@
   position: fixed;
   top: 0;
   left: 0;
-  /* display: none;*/
+  display: none;
+  /*display none*/
   justify-content: center;
   align-items: center;
   background-color: rgba(0, 0, 0, 0.5);
@@ -46,6 +47,19 @@
   max-width: 75vw;
   max-height: 75vh;
   object-fit: cover;
+}
+
+.popup__container-infotooltip {
+  width: 430px;
+  height: 330px;
+  position: relative;
+  background-color: #ffffff;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: visible;
 }
 
 .popup__image-title {

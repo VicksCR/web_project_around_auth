@@ -1,13 +1,14 @@
 import popupCloseIcon from "../../../../images/close-icon.png";
 
 export default function Popup(props) {
-  const { onClose, title, children, variant } = props;
+  const { onClose, title, children, variant = "", isOpen = true } = props;
+  if (!isOpen) return null;
 
   return (
-    <div className="popup popup__opened">
+    <div className={`popup ${isOpen ? "popup__opened" : ""}`}>
       <div
         className={`popup__container ${
-          variant ? `popup__container--${variant}` : ""
+          variant ? `popup__container-${variant}` : ""
         }
         ${!title ? "popup__container-image " : ""}`}
       >

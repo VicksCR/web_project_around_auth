@@ -1,17 +1,22 @@
-export default function InfoToolTip({ isOpen, success, onClose }) {
+import React from "react";
+import "../../../../blocks/infotooltip.css";
+import failImage from "../../../../images/fail.png";
+import successImage from "../../../../images/success.png";
+import Popup from "../../components/Popup/Popup";
+
+export default function InfoToolTip({ isOpen, isSuccess, onClose }) {
   return (
-    isOpen && (
-      <div className="tooltip">
-        <div className="tooltip__content">
-          <p>
-            {success
-              ? "¡Correcto! Ya estás registrado."
-              : "Uy, algo salió mal. Por favor, inténtalo de nuevo."}
-          </p>
-        </div>
-      </div>
-    )
+    <Popup isOpen={isOpen} onClose={onClose} variant="infotooltip">
+      <img
+        src={isSuccess ? successImage : failImage}
+        alt={isSuccess ? "Éxito" : "Error"}
+        className="infotooltip__image"
+      />
+      <p className="infotooltip__text">
+        {isSuccess
+          ? "¡Correcto! Ya estás registrado."
+          : "Uy, algo salió mal. Por favor, inténtalo de nuevo."}
+      </p>
+    </Popup>
   );
 }
-
-//falta hacer el HTML apropiado siguiendo el diseño de Figma e implementando Popup
