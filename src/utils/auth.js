@@ -6,10 +6,12 @@ export const register = (email, password) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   }).then((res) => {
-    if (res.ok) return res.json();
-    return res
-      .json()
-      .then((err) => Promise.reject(err.message || `Error: ${res.status}`));
+    if (!res.ok) {
+      return res.text().then((text) => {
+        throw new Error(text || `Error: ${res.status}`);
+      });
+    }
+    return res.json();
   });
 };
 
@@ -19,10 +21,12 @@ export const authorize = (email, password) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   }).then((res) => {
-    if (res.ok) return res.json();
-    return res
-      .json()
-      .then((err) => Promise.reject(err.message || `Error: ${res.status}`));
+    if (!res.ok) {
+      return res.text().then((text) => {
+        throw new Error(text || `Error: ${res.status}`);
+      });
+    }
+    return res.json();
   });
 };
 
@@ -34,9 +38,11 @@ export const checkToken = (token) => {
       Authorization: `Bearer ${token}`,
     },
   }).then((res) => {
-    if (res.ok) return res.json();
-    return res
-      .json()
-      .then((err) => Promise.reject(err.message || `Error: ${res.status}`));
+    if (!res.ok) {
+      return res.text().then((text) => {
+        throw new Error(text || `Error: ${res.status}`);
+      });
+    }
+    return res.json();
   });
 };

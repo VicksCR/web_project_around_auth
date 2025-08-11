@@ -89,8 +89,7 @@ export default function Main({
       </section>
 
       <section className="elements" id="elements-container-cards">
-        {}
-        {cards.map((card) => (
+        {(cards || []).map((card) => (
           <Card
             key={card._id}
             card={card}

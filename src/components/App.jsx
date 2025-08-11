@@ -20,7 +20,7 @@ import ProtectedRoute from "../components/Main/components/ProtectedRoute/Protect
 import CurrentUserContext from "../contexts/CurrentUserContext.js";
 
 export default function App() {
-  const [currentUser, setCurrentUser] = useState([]);
+  const [currentUser, setCurrentUser] = useState({});
   const [loggedIn, setLoggedIn] = useState(false);
   const [cards, setCards] = useState([]);
   const [popup, setPopup] = useState(null);
@@ -34,27 +34,29 @@ export default function App() {
   const location = useLocation();
   const showRegisterLink = location.pathname === "/signin";
   const showLoginLink = location.pathname === "/signup";
-  const token = localStorage.getItem("jwt");
 
   useEffect(() => {
+    const token = localStorage.getItem("jwt");
     if (!token) return;
 
     auth
       .checkToken(token)
-      .then((res) => {
+      .then((userData) => {
+        const email = userData?.data?.email || userData?.email || null;
+        setCurrentUser((prev) => ({ ...prev, email }));
         setLoggedIn(true);
-        setCurrentUser(res.data);
+
+        return Promise.all([api.getUserInfo(), api.getInitialCards()]);
       })
-      .catch(() => {
+      .then(({ userFromContentApi, cardsData }) => {
+        setCurrentUser((prev) => ({ ...prev, ...userFromContentApi }));
+        setCards(Array.isArray(cardsData) ? cardsData : []);
+      })
+      .catch((err) => {
+        console.error("Error al verificar el token:", err);
         handleLogout();
       });
   }, []);
-
-  useEffect(() => {
-    if (!loggedIn) return;
-    api.getUserInfo().then(setCurrentUser).catch(console.error);
-    api.getInitialCards().then(setCards).catch(console.error);
-  }, [loggedIn]);
 
   const handleRegister = async (email, password) => {
     try {
@@ -65,14 +67,16 @@ export default function App() {
         message: "Registro exitoso",
       });
       setTimeout(() => {
-        setTooltip({ open: false, success: true, message: "" });
+        setInfoToolTip({ open: false, success: true, message: "" });
         navigate("/signin");
       }, 2000);
     } catch (err) {
-      const msg = err.includes("400")
-        ? "Campos inválidos o incompletos."
-        : "Error del servidor.";
-      setTooltip({ open: true, success: false, message: msg });
+      console.error("Error al registrarse:", err);
+      setInfoToolTip({
+        open: true,
+        success: false,
+        message: err.message || "Error al registrarse",
+      });
     }
   };
 
@@ -80,24 +84,34 @@ export default function App() {
     try {
       const { token } = await auth.authorize(email, password);
       localStorage.setItem("jwt", token);
+
+      const userData = await auth.checkToken(token);
+      setCurrentUser({ email: userData?.data?.email || userData?.email || "" });
       setLoggedIn(true);
 
-      const user = await auth.checkToken(token);
-      setCurrentUser(user.data);
-
-      const cardsData = await api.getInitialCards();
+      const [userFromContentApi, cardsData] = await Promise.all([
+        api.getUserInfo(),
+        api.getInitialCards(),
+      ]);
+      setCurrentUser((prev) => ({ ...prev, ...userFromContentApi }));
       setCards(cardsData);
 
-      setTooltip({ open: true, success: true, message: "¡Ingreso exitoso!" });
+      setInfoToolTip({
+        open: true,
+        success: true,
+        message: "¡Ingreso exitoso!",
+      });
       setTimeout(() => {
-        setTooltip({ open: false, success: false, message: "" });
+        setInfoToolTip({ open: false, success: false, message: "" });
         navigate("/");
       }, 2000);
     } catch (err) {
-      let msg = "Error desconocido.";
-      if (err.includes("400")) msg = "Faltan campos obligatorios.";
-      else if (err.includes("401")) msg = "Email o contraseña incorrectos.";
-      setTooltip({ open: true, success: false, message: msg });
+      console.error("Error al iniciar sesión:", err);
+      setInfoToolTip({
+        open: true,
+        success: false,
+        message: "Email o contrase;a no validos",
+      });
     }
   };
 

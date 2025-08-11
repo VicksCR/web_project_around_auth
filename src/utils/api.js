@@ -4,126 +4,72 @@ class Api {
     this.headers = options.headers;
   }
 
-  _getHeaders() {
+  _checkResponse(res) {
+    if (!res.ok) {
+      return res.json()
+        ? res.json().then((err) => Promise.reject(err))
+        : Promise.reject(`Error: ${res.status}`);
+    }
+    return res.json();
+  }
+
+  /*getHeaders() {
     return {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("jwt")}`,
+      Authorization: `Bearer ${localStorage.getItem("jwt") || ""}`,
     };
-  }
+  }*/
 
   getUserInfo() {
     return fetch(`${this.baseUrl}/users/me`, {
       method: "GET",
-      headers: this._getHeaders(),
-    })
-      .then((res) => {
-        if (!res.ok) {
-          return Promise.reject(`Error: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((result) => {
-        return result;
-      });
+      headers: this.headers,
+    }).then(this._checkResponse);
   }
 
   getInitialCards() {
     return fetch(`${this.baseUrl}/cards`, {
       method: "GET",
-      headers: this._getHeaders(),
-    })
-      .then((res) => {
-        if (!res.ok) {
-          return Promise.reject(`Error: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((result) => {
-        return result;
-      });
+      headers: this.headers,
+    }).then(this._checkResponse);
   }
 
   updateUserProfile(name, about) {
     return fetch(`${this.baseUrl}/users/me`, {
       method: "PATCH",
-      headers: this._getHeaders(),
+      headers: this.headers,
       body: JSON.stringify({ name, about }),
-    })
-      .then((res) => {
-        if (!res.ok) {
-          return Promise.reject(`Error: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((result) => {
-        return result;
-      });
+    }).then(this._checkResponse);
   }
 
   addNewCard(name, link) {
     return fetch(`${this.baseUrl}/cards`, {
       method: "POST",
-      headers: this._getHeaders(),
+      headers: this.headers,
       body: JSON.stringify({ name, link }),
-    })
-      .then((res) => {
-        if (!res.ok) {
-          return res
-            .json()
-            .then((err) =>
-              Promise.reject(`Error: ${err.message || res.status}`)
-            );
-        }
-        return res.json();
-      })
-      .catch((err) => {
-        return Promise.reject(err);
-      });
+    }).then(this._checkResponse);
   }
 
   toggleLike(cardId, isLiked) {
     return fetch(`${this.baseUrl}/cards/${cardId}/likes`, {
       method: isLiked ? "DELETE" : "PUT",
-      headers: this._getHeaders(),
-    })
-      .then((res) => {
-        if (!res.ok) {
-          return Promise.reject(`Error: ${res.status}`);
-        }
-        return res.json();
-      })
-      .catch((err) => {
-        return Promise.reject(err);
-      });
+      headers: this.headers,
+    }).then(this._checkResponse);
   }
 
   deleteCard(cardId) {
     return fetch(`${this.baseUrl}/cards/${cardId}`, {
       method: "DELETE",
-      headers: this._getHeaders(),
-    }).then((res) => {
-      if (!res.ok) {
-        return Promise.reject(`Error: ${res.status}`);
-      }
-      return res.json();
-    });
+      headers: this.headers,
+    }).then(this._checkResponse);
   }
 
   updateProfileAvatar(avatar) {
     return fetch(`${this.baseUrl}/users/me/avatar`, {
       method: "PATCH",
-      headers: this._getHeaders(),
+      headers: this.headers,
       body: JSON.stringify({ avatar }),
-    })
-      .then((res) => {
-        if (!res.ok) {
-          return Promise.reject(`Error: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((result) => {
-        return result;
-      });
+    }).then(this._checkResponse);
   }
 }
 

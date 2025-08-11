@@ -62,5 +62,3 @@ export default function Login({ onLogin }) {
     </>
   );
 }
-//ACTUALIZAR DE ACUERDO A FIGMA
-//FALTA EL REGISTRATE EN <HEADER>
